@@ -1,0 +1,5 @@
+{
+  "$schema": "https://dev.wix.com/wix-cli/schemas/wix-config.json",
+  "appId": "b4f296de-a9af-4f48-920d-7492a939f06b",
+  "projectId": "payment-plugins"
+}

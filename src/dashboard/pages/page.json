@@ -1,0 +1,5 @@
+{
+  "$schema": "https://dev.wix.com/wix-cli/schemas/dashboard-page.json",
+  "id": "609fcb9f-2422-43e0-a3be-da10886185ad",
+  "title": "payment_plugins"
+}
