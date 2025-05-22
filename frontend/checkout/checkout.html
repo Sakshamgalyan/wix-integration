@@ -1,48 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payment Gateway</title>
-  <link rel="stylesheet" href="checkout.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaySecure Payment Gateway</title>
+    <link rel="stylesheet" href="checkout.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-  <div class="order-summary">
-    <h2>Order Summary</h2>
-    <p id="order-id">Order ID: Loading...</p>
-    <p id="order-amount">Amount: Loading...</p>
-  </div>
+    <!-- Header Section -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="assets/logo.png" alt="Payment Gateway" class="logo">
+                <div class="brand-text">
+                    <span class="company-name">PaySecure</span>
+                    <span class="tagline">Secure Payment Gateway</span>
+                </div>
+            </div>
+            <div class="security-badges">
+                <div class="badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>256-bit SSL</span>
+                </div>
+                <div class="badge">
+                    <i class="fas fa-lock"></i>
+                    <span>PCI DSS Compliant</span>
+                </div>
+                <div class="badge">
+                    <i class="fas fa-clock"></i>
+                    <span>24/7 Support</span>
+                </div>
+            </div>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-step completed">
+                    <div class="step-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <span class="step-label">Cart</span>
+                </div>
+                <div class="progress-step active">
+                    <div class="step-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <span class="step-label">Payment</span>
+                </div>
+                <div class="progress-step">
+                    <div class="step-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <span class="step-label">Confirmation</span>
+                </div>
+            </div>
+        </div>
+    </header>
 
-  <div class="payment-form">
-    <h2>Payment Details</h2>
-    <form id="payment-form">
-      <div class="form-group">
-        <label for="card-number">Card Number</label>
-        <input type="text" id="card-number" placeholder="1234 5678 9012 3456" required>
-        <div id="card-number-error" class="error"></div>
-      </div>
-      
-      <div class="form-group">
-        <label for="card-expiry">Expiration Date</label>
-        <input type="text" id="card-expiry" placeholder="MM/YY" required>
-        <div id="card-expiry-error" class="error"></div>
-      </div>
-      
-      <div class="form-group">
-        <label for="card-cvv">CVV</label>
-        <input type="text" id="card-cvv" placeholder="123" required>
-        <div id="card-cvv-error" class="error"></div>
-      </div>
-      
-      <div class="form-group">
-        <label for="card-name">Name on Card</label>
-        <input type="text" id="card-name" placeholder="John Doe" required>
-      </div>
-      
-      <button type="submit" id="pay-button">Pay Now</button>
-      <button type="button" id="cancel-button">Cancel Payment</button>
-    </form>
-  </div>
-  <script src="checkout.js"></script>
+    <div class="main-container">
+        <!-- Left Side -->
+        <div class="left-panel">
+            <div class="order-summary">
+                <h2>Order Summary</h2>
+                <p id="order-id">Order ID: Loading...</p>
+                <p id="order-amount">Amount: Loading...</p>
+            </div>
+
+            <div class="payment-method-tabs">
+                <button class="tab-button active" data-method="card">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Card</span>
+                </button>
+                <button class="tab-button" data-method="netbanking">
+                    <i class="fas fa-university"></i>
+                    <span>Net Banking</span>
+                </button>
+                <button class="tab-button" data-method="wallet">
+                    <i class="fas fa-wallet"></i>
+                    <span>Wallet</span>
+                </button>
+                <button class="tab-button" data-method="upi">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>UPI</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Side -->
+        <div class="right-panel">
+            <div class="payment-forms">
+                <!-- Payment method content here -->
+                <!-- Card Payment Form -->
+                <div class="payment-method-content" id="card-payment">
+                    <div class="card-preview">
+                        <div class="card-chip"></div>
+                        <div class="card-details">
+                            <div class="card-number" id="card-preview-number">**** **** **** ****</div>
+                            <div class="card-info">
+                                <div class="card-holder">
+                                    <label>Card Holder</label>
+                                    <div id="card-preview-name">CARD HOLDER</div>
+                                </div>
+                                <div class="card-expiry">
+                                    <label>Expires</label>
+                                    <div id="card-preview-expiry">MM/YY</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-type" id="card-type"></div>
+                    </div>
+
+                    <form id="card-form" class="payment-form">
+                        <div class="form-group">
+                            <input type="text" id="card-number" required maxlength="19">
+                            <label for="card-number">Card Number</label>
+                            <div class="card-icon" id="card-icon"></div>
+                            <div id="card-number-error" class="error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="text" id="card-name" required>
+                            <label for="card-name">Name on Card</label>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="card-expiry" required maxlength="5">
+                                <label for="card-expiry">Expiration Date</label>
+                                <div id="card-expiry-error" class="error"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <input type="text" id="card-cvv" required maxlength="4">
+                                <label for="card-cvv">CVV</label>
+                                <div id="card-cvv-error" class="error"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-buttons">
+                            <button type="submit" class="pay-button">
+                                <span>Pay with Card</span>
+                                <div class="spinner"></div>
+                            </button>
+                            <button type="button" class="cancel-button">
+                                <i class="fas fa-times"></i>
+                                <span>Cancel Payment</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Net Banking Form -->
+                <div class="payment-method-content" id="netbanking-payment">
+                    <form id="netbanking-form" class="payment-form">
+                        <div class="form-group">
+                            <select id="bank-select" required>
+                                <option value="" disabled selected></option>
+                                <option value="sbi">State Bank of India</option>
+                                <option value="hdfc">HDFC Bank</option>
+                                <option value="icici">ICICI Bank</option>
+                                <option value="axis">Axis Bank</option>
+                            </select>
+                            <label for="bank-select">Select Bank</label>
+                        </div>
+                        <div class="payment-buttons">
+                            <button type="submit" class="pay-button">
+                                <span>Pay with Net Banking</span>
+                                <div class="spinner"></div>
+                            </button>
+                            <button type="button" class="cancel-button">
+                                <i class="fas fa-times"></i>
+                                <span>Cancel Payment</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Wallet Form -->
+                <div class="payment-method-content" id="wallet-payment" style="display: none;">
+                    <form id="wallet-form" class="payment-form">
+                        <div class="wallet-options">
+                            <div class="wallet-option">
+                                <input type="radio" id="paytm" name="wallet" value="paytm">
+                                <label for="paytm">
+                                    <img src="assets/paytm.png" alt="Paytm">
+                                    <span>Paytm</span>
+                                </label>
+                            </div>
+                            <div class="wallet-option">
+                                <input type="radio" id="phonepay" name="wallet" value="phonepay">
+                                <label for="phonepay">
+                                    <img src="assets/phonepay.png" alt="PhonePay">
+                                    <span>PhonePay</span>
+                                </label>
+                            </div>
+                            <div class="wallet-option">
+                                <input type="radio" id="amazonpay" name="wallet" value="amazonpay">
+                                <label for="amazonpay">
+                                    <img src="assets/amazonpay.png" alt="Amazon Pay">
+                                    <span>Amazon Pay</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="payment-buttons">
+                            <button type="submit" class="pay-button">
+                                <span>Pay with Wallet</span>
+                                <div class="spinner"></div>
+                            </button>
+                            <button type="button" class="cancel-button">
+                                <i class="fas fa-times"></i>
+                                <span>Cancel Payment</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- UPI Form -->
+                <div class="payment-method-content" id="upi-payment" style="display: none;">
+                    <form id="upi-form" class="payment-form">
+                        <div class="form-group">
+                            <label for="upi-id">UPI ID</label>
+                            <input type="text" id="upi-id" placeholder="username@upi" required>
+                            <div id="upi-id-error" class="error"></div>
+                        </div>
+                        <div class="upi-apps">
+                            <button type="button" class="upi-app-button" data-app="gpay">
+                                <img src="assets/gpay.png" alt="Google Pay">
+                                <span>Google Pay</span>
+                            </button>
+                            <button type="button" class="upi-app-button" data-app="phonepay">
+                                <img src="assets/phonepay.png" alt="PhonePe">
+                                <span>PhonePe</span>
+                            </button>
+                            <button type="button" class="upi-app-button" data-app="paytm">
+                                <img src="assets/paytm.png" alt="Paytm">
+                                <span>Paytm</span>
+                            </button>
+                            <button type="button" class="upi-app-button" data-app="bhim">
+                                <img src="assets/bhim.png" alt="BHIM">
+                                <span>BHIM</span>
+                            </button>
+                        </div>
+                        <div class="payment-buttons">
+                            <button type="submit" class="pay-button">
+                                <span>Pay with UPI</span>
+                                <div class="spinner"></div>
+                            </button>
+                            <button type="button" class="cancel-button">
+                                <i class="fas fa-times"></i>
+                                <span>Cancel Payment</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="checkout.js"></script>
 </body>
 </html>

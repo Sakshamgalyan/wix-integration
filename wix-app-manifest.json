@@ -1,13 +1,13 @@
 {
   "name": "Custom Payment Provider",
-  "id": "your-app-id",
+  "id": "PaysecureID",
   "version": "1.0.0",
   "supportedLocales": ["en"],
   "capabilities": {
     "payments": {
       "supported": true,
       "currencies": ["USD"],
-      "paymentMethods": ["credit_card"],
+      "paymentMethods": ["card", "upi", "netbanking", "wallet"],
       "recurring": false
     }
   },
