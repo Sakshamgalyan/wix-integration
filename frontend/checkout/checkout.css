@@ -728,6 +728,18 @@ body {
     color: #4CAF50;
 }
 
+/* Payment Method Content */
+.payment-method-content {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.payment-method-content.active {
+    display: block;
+    opacity: 1;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .header-content {

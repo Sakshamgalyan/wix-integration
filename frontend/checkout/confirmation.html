@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmation</title>
+    <link rel="stylesheet" href="checkout.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="confirmation-container">
+        <div class="confirmation-card">
+            <i class="fas fa-check-circle success-icon"></i>
+            <h1>Payment Successful!</h1>
+            <p>Your payment has been processed successfully.</p>
+            <div class="order-details">
+                <p id="order-id"></p>
+                <p id="order-amount"></p>
+            </div>
+            <button class="return-button" onclick="window.location.href='checkout.html'">
+                Return to Payment Page
+            </button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const details = JSON.parse(localStorage.getItem('paymentDetails') || '{}');
+            
+            if (details.orderId) {
+                document.getElementById('order-id').textContent = details.orderId;
+            }
+            if (details.amount) {
+                document.getElementById('order-amount').textContent = details.amount;
+            }
+            
+            // Clear the stored data
+            localStorage.removeItem('paymentDetails');
+        });
+    </script>
+</body>
+</html>

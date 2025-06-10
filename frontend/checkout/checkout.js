@@ -1,3 +1,12 @@
+function safeQuerySelector(selector) {
+    const element = document.querySelector(selector);
+    if (!element) {
+        console.warn(`Element with selector "${selector}" not found`);
+        return null;
+    }
+    return element;
+}
+
 const API_URL = 'http://localhost:3000';
 const API_KEY = '93a7fcb2-daf5-46ee-a00f-f6fd272fc522';
 
@@ -82,7 +91,6 @@ function validateCard() {
             document.getElementById('card-expiry').parentElement.classList.add('valid');
         }
     }
-    
     if (!/^\d{3,4}$/.test(cvv)) {
         document.getElementById('card-cvv-error').textContent = 'Invalid CVV';
         document.getElementById('card-cvv').parentElement.classList.add('error');
@@ -92,7 +100,6 @@ function validateCard() {
         document.getElementById('card-cvv').parentElement.classList.remove('error');
         document.getElementById('card-cvv').parentElement.classList.add('valid');
     }
-    
     return isValid;
 }
 
@@ -184,8 +191,14 @@ document.getElementById('upi-id').addEventListener('input', (e) => {
 document.querySelectorAll('.upi-app-button').forEach(button => {
     button.addEventListener('click', () => {
         const app = button.getAttribute('data-app');
-        // Handle UPI app selection logic here
-        console.log(`Selected UPI app: ${app}`);
+        // Remove selected class from all buttons
+        document.querySelectorAll('.upi-app-button').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        // Add selected class to clicked button
+        button.classList.add('selected');
+        // Clear error message when an app is selected
+        document.getElementById('upi-app-error').textContent = '';
     });
 });
 
@@ -193,19 +206,150 @@ document.querySelectorAll('.upi-app-button').forEach(button => {
 document.getElementById('netbanking-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const bank = document.getElementById('bank-select').value;
-    // Add your net banking payment logic here
+    try {
+        const paymentId = `pay_${Date.now()}`;
+        
+        // Add a radio button group to switch between UPI ID and UPI Apps
+        document.querySelectorAll('.upi-app-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Hide UPI ID input when app is selected
+                document.getElementById('upi-id').value = '';
+                document.getElementById('upi-id').style.display = 'none';
+                document.getElementById('upi-id-error').textContent = '';
+            });
+        });
+
+        // Modify UPI form submit handler
+        document.getElementById('upi-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const selectedApp = document.querySelector('.upi-app-button.selected');
+            if (!selectedApp && !document.getElementById('upi-id').value) {
+                document.getElementById('upi-app-error').textContent = 'Please select a UPI app or enter UPI ID';
+                return;
+            }
+
+            // If an app is selected, proceed without requiring UPI ID
+            if (selectedApp) {
+                const upiApp = selectedApp.getAttribute('data-app');
+                // Clear any previous UPI ID since we're using an app
+                document.getElementById('upi-id').value = '';
+                document.getElementById('upi-id-error').textContent = '';
+            }
+
+            // Only validate UPI ID if it's visible
+            const upiId = document.getElementById('upi-id').value;
+            const upiIdVisible = document.getElementById('upi-id').style.display !== 'none';
+            
+            if (upiIdVisible) {
+                const upiRegex = /^[\w.-]+@[\w.-]+$/;
+                if (!upiRegex.test(upiId)) {
+                    document.getElementById('upi-id-error').textContent = 'Invalid UPI ID format';
+                    return;
+                }
+            }
+            
+            // Rest of your existing UPI payment processing code...
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            alert('Net banking payment initiated successfully!');
+            window.location.href = urlParams.get('successUrl') || '/';
+        } else {
+            throw new Error('Net banking payment failed');
+        }
+        } catch (error) {
+        console.error('Net banking payment error:', error);
+        alert('Payment failed. Please try again.');
+        window.location.href = './cancel.html';
+    }
 });
 
 document.getElementById('wallet-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const wallet = document.querySelector('input[name="wallet"]:checked').value;
-    // Add your wallet payment logic here
+    try {
+        const paymentId = `pay_${Date.now()}`;
+        
+        const response = await fetch(`${API_URL}/api/payments/wallet`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': API_KEY
+            },
+            body: JSON.stringify({
+                paymentId,
+                orderId,
+                amount: Number(amount),
+                wallet: wallet
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            alert('Wallet payment initiated successfully!');
+            window.location.href = urlParams.get('successUrl') || '/';
+        } else {
+            throw new Error('Wallet payment failed');
+        }
+    } catch (error) {
+        console.error('Wallet payment error:', error);
+        alert('Payment failed. Please try again.');
+        window.location.href = './cancel.html';
+    }
 });
 
 document.getElementById('upi-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const upiId = document.getElementById('upi-id').value;
-    // Add your UPI payment logic here
+    const upiRegex = /^[\w.-]+@[\w.-]+$/;
+
+    if (!upiRegex.test(upiId)) {
+        document.getElementById('upi-id-error').textContent = 'Invalid UPI ID format';
+        return;
+    }
+
+    const selectedApp = document.querySelector('.upi-app-button.selected');
+    if (!selectedApp) {
+        document.getElementById('upi-app-error').textContent = 'Please select a UPI app';
+        return;
+    }
+
+    try {
+        const paymentId = `pay_${Date.now()}`;
+        const upiApp = selectedApp.getAttribute('data-app');
+        
+        const response = await fetch(`${API_URL}/api/payments/upi`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': API_KEY
+            },
+            body: JSON.stringify({
+                paymentId,
+                orderId,
+                amount: Number(amount),
+                upiId: upiId,
+                upiApp: upiApp
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            alert('UPI payment initiated successfully!');
+            window.location.href = urlParams.get('successUrl') || '/';
+        } else {
+            throw new Error('UPI payment failed');
+        }
+    } catch (error) {
+        console.error('UPI payment error:', error);
+        alert('Payment failed. Please try again.');
+        window.location.href = './cancel.html';
+    }
 });
 
 // Real-time input formatting and validation
@@ -215,7 +359,7 @@ document.getElementById('card-number').addEventListener('input', (e) => {
     e.target.value = value.replace(/(\d{4})/g, '$1 ').trim();
     updateCardPreview('number', value);
     validateCard();
-    animateCardPreview();
+    animateCardPreview();24
 });
 
 document.getElementById('card-name').addEventListener('input', (e) => {
@@ -304,266 +448,92 @@ document.getElementById('cancel-button').addEventListener('click', () => {
 
 // Payment handling code
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize variables
-    const API_URL = 'http://localhost:3000';
-    const API_KEY = '93a7fcb2-daf5-46ee-a00f-f6fd272fc522';
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderId = urlParams.get('orderId') || 'TEST-' + Math.random().toString(36).substr(2, 9);
-    const amount = urlParams.get('amount') || '2500';
-
-    // Update display values
-    document.getElementById('order-id').textContent = `Order ID: ${orderId}`;
-    document.getElementById('order-amount').textContent = `Amount: ₹${(parseInt(amount)/100).toFixed(2)}`;
-
     // Payment method switching
-    const paymentMethods = document.querySelectorAll('.tab-button');
+    const tabs = document.querySelectorAll('.tab-button');
     const paymentContents = document.querySelectorAll('.payment-method-content');
 
-    paymentMethods.forEach(method => {
-        method.addEventListener('click', () => {
-            // Remove active class from all methods
-            paymentMethods.forEach(m => m.classList.remove('active'));
-            
-            // Add active class to clicked method
-            method.classList.add('active');
-
-            // Hide all payment contents with fade out
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active class from all tabs and contents
+            tabs.forEach(t => t.classList.remove('active'));
             paymentContents.forEach(content => {
-                content.style.opacity = '0';
-                setTimeout(() => {
-                    content.style.display = 'none';
-                }, 300);
+                content.style.display = 'none';
+                content.classList.remove('active');
             });
 
-            // Show selected payment content with fade in
-            const selectedContent = document.getElementById(`${method.dataset.method}-payment`);
-            setTimeout(() => {
+            // Add active class to clicked tab
+            tab.classList.add('active');
+
+            // Show selected payment content
+            const selectedMethod = tab.getAttribute('data-method');
+            const selectedContent = document.getElementById(`${selectedMethod}-payment`);
+            if (selectedContent) {
                 selectedContent.style.display = 'block';
-                setTimeout(() => {
-                    selectedContent.style.opacity = '1';
-                }, 50);
-            }, 300);
+                setTimeout(() => selectedContent.classList.add('active'), 10);
+            }
         });
     });
 
-    // Card input handling
-    const cardNumber = document.getElementById('card-number');
-    const cardName = document.getElementById('card-name');
-    const cardExpiry = document.getElementById('card-expiry');
-    const cardCvv = document.getElementById('card-cvv');
-
-    if (cardNumber) {
-        cardNumber.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 16) value = value.substr(0, 16);
-            e.target.value = value.replace(/(\d{4})/g, '$1 ').trim();
-            
-            // Update card preview
-            document.getElementById('card-preview-number').textContent = 
-                value.padEnd(16, '*').match(/.{1,4}/g).join(' ');
-            
-            // Detect and show card type
-            const cardType = detectCardType(value);
-            document.getElementById('card-type').textContent = cardType.toUpperCase();
-        });
-    }
-
-    if (cardName) {
-        cardName.addEventListener('input', (e) => {
-            const value = e.target.value.toUpperCase();
-            document.getElementById('card-preview-name').textContent = value || 'CARD HOLDER';
-        });
-    }
-
-    if (cardExpiry) {
-        cardExpiry.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 4) value = value.substr(0, 4);
-            if (value.length > 2) {
-                value = value.substr(0, 2) + '/' + value.substr(2);
-            }
-            e.target.value = value;
-            document.getElementById('card-preview-expiry').textContent = value || 'MM/YY';
-        });
-    }
-
-    // Form submissions
+    // Form submission handling
     const forms = document.querySelectorAll('.payment-form');
     forms.forEach(form => {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const submitButton = form.querySelector('button[type="submit"]');
-            
+
+            const payButton = form.querySelector('.pay-button');
+            const buttonText = payButton.querySelector('span');
+            const spinner = payButton.querySelector('.spinner');
+
             try {
                 // Show loading state
-                submitButton.disabled = true;
-                submitButton.innerHTML = `
-                    <div class="spinner"></div>
-                    <span>Processing...</span>
-                `;
+                payButton.disabled = true;
+                spinner.style.display = 'block';
+                buttonText.textContent = 'Processing...';
+
+                // Get order details
+                const orderDetails = {
+                    orderId: document.querySelector('#order-id').textContent,
+                    amount: document.querySelector('#order-amount').textContent,
+                    paymentMethod: form.id,
+                    timestamp: new Date().toISOString()
+                };
+
+                // Store in localStorage
+                localStorage.setItem('paymentDetails', JSON.stringify(orderDetails));
 
                 // Simulate payment processing
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // Show success state
-                submitButton.innerHTML = `
-                    <i class="fas fa-check"></i>
-                    <span>Payment Successful!</span>
-                `;
-                submitButton.classList.add('success');
+                // Update progress steps
+                const paymentStep = document.querySelector('.progress-step.active');
+                const confirmationStep = document.querySelector('.progress-step:last-child');
+                
+                if (paymentStep && confirmationStep) {
+                    paymentStep.classList.remove('active');
+                    paymentStep.classList.add('completed');
+                    confirmationStep.classList.add('active');
+                }
 
-                // Redirect after success
-                setTimeout(() => {
-                    const successUrl = urlParams.get('successUrl') || '/success.html';
-                    window.location.href = `${successUrl}?orderId=${orderId}`;
-                }, 1000);
+                // Direct redirection
+                window.location.assign('./confirmation.html');
 
             } catch (error) {
-                // Show error state
-                submitButton.disabled = false;
-                submitButton.innerHTML = `
-                    <i class="fas fa-times"></i>
-                    <span>Payment Failed</span>
-                `;
-                submitButton.classList.add('error');
-                console.error('Payment error:', error);
+                console.error('Payment failed:', error);
+                payButton.style.backgroundColor = '#ef4444';
+                buttonText.textContent = 'Payment Failed';
+                spinner.style.display = 'none';
+                payButton.disabled = false;
+                alert('Payment failed. Please try again.');
             }
         });
     });
 
-    // Cancel payment
-    const cancelButton = document.getElementById('cancel-button');
-    if (cancelButton) {
-        cancelButton.addEventListener('click', () => {
+    // Handle cancel buttons
+    document.querySelectorAll('.cancel-button').forEach(button => {
+        button.addEventListener('click', () => {
             if (confirm('Are you sure you want to cancel this payment?')) {
-                const cancelUrl = urlParams.get('cancelUrl') || '/cancel.html';
-                window.location.href = cancelUrl;
-            }
-        });
-    }
-
-    // Handle floating labels
-    const formInputs = document.querySelectorAll('.form-group input');
-    formInputs.forEach(input => {
-        // Set initial state for pre-filled inputs
-        if (input.value) {
-            input.nextElementSibling.classList.add('float');
-        }
-
-        // Handle input events
-        input.addEventListener('focus', () => {
-            input.nextElementSibling.classList.add('float');
-        });
-
-        input.addEventListener('blur', () => {
-            if (!input.value) {
-                input.nextElementSibling.classList.remove('float');
+                window.history.back();
             }
         });
     });
-
-    // Initialize form inputs
-    const inputs = document.querySelectorAll('.form-group input');
-    inputs.forEach(input => {
-        // Set initial state
-        if (input.value) {
-            input.parentElement.classList.add('filled');
-        }
-
-        // Add empty placeholder to prevent default placeholder
-        input.setAttribute('placeholder', ' ');
-
-        // Handle input events
-        input.addEventListener('focus', () => {
-            input.parentElement.classList.add('focused');
-        });
-
-        input.addEventListener('blur', () => {
-            input.parentElement.classList.remove('focused');
-            if (!input.value) {
-                input.parentElement.classList.remove('filled');
-            }
-        });
-
-        input.addEventListener('input', () => {
-            if (input.value) {
-                input.parentElement.classList.add('filled');
-            } else {
-                input.parentElement.classList.remove('filled');
-            }
-        });
-    });
-
-    // Add to your DOMContentLoaded event listener
-    // Handle select elements
-    const selects = document.querySelectorAll('.form-group select');
-    selects.forEach(select => {
-        select.addEventListener('change', () => {
-            if (select.value) {
-                select.classList.add('filled');
-            } else {
-                select.classList.remove('filled');
-            }
-        });
-    });
-
-    // Adjust main container height
-    function adjustContainerHeight() {
-        const mainContainer = document.querySelector('.main-container');
-        const windowHeight = window.innerHeight;
-        const headerHeight = document.querySelector('.main-header').offsetHeight;
-        mainContainer.style.minHeight = `${windowHeight - headerHeight}px`;
-    }
-
-    // Call on load and resize
-    adjustContainerHeight();
-    window.addEventListener('resize', adjustContainerHeight);
-
-    // Handle tab switching
-    const tabs = document.querySelectorAll('.tab-button');
-    const paymentForms = document.querySelectorAll('.payment-method-content');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // Remove active class from all tabs
-            tabs.forEach(t => t.classList.remove('active'));
-            
-            // Add active class to clicked tab
-            tab.classList.add('active');
-
-            // Hide all payment forms
-            paymentForms.forEach(form => {
-                form.style.opacity = '0';
-                setTimeout(() => {
-                    form.style.display = 'none';
-                }, 300);
-            });
-
-            // Show selected payment form
-            const selectedForm = document.getElementById(`${tab.dataset.method}-payment`);
-            setTimeout(() => {
-                selectedForm.style.display = 'block';
-                requestAnimationFrame(() => {
-                    selectedForm.style.opacity = '1';
-                });
-            }, 300);
-        });
-    });
-
-    // Handle sticky left panel
-    function updateStickyPanel() {
-        const leftPanel = document.querySelector('.left-panel');
-        const headerHeight = document.querySelector('.main-header').offsetHeight;
-        const scrollTop = window.pageYOffset;
-
-        if (window.innerWidth > 768) {
-            leftPanel.style.top = `${Math.max(headerHeight + 20, scrollTop + 20)}px`;
-        } else {
-            leftPanel.style.top = '0';
-        }
-    }
-
-    window.addEventListener('scroll', updateStickyPanel);
-    window.addEventListener('resize', updateStickyPanel);
-    updateStickyPanel();
 });

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Cancelled</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .order-summary {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 1.5rem;
+        }
+
+        .button-group {
+            margin-top: 2rem;
+        }
+
+        .button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .retry-button {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .home-button {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="order-summary">
+        <h1>Payment Cancelled</h1>
+        <p>Your payment has been cancelled.</p>
+        <p>Would you like to try again or return to the homepage?</p>
+        
+        <div class="button-group">
+            <button class="button retry-button" onclick="retryPayment()">Try Again</button>
+            <button class="button home-button" onclick="goHome()">Return Home</button>
+        </div>
+    </div>
+
+    <script>
+        function retryPayment() {
+            // Replace with your checkout page URL
+            window.location.href = "/checkout";
+        }
+
+        function goHome() {
+            // Replace with your homepage URL
+            window.location.href = "/";
+        }
+    </script>
+</body>
+</html></div>
