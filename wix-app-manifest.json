@@ -7,7 +7,7 @@
     "payments": {
       "supported": true,
       "currencies": ["USD"],
-      "paymentMethods": ["card", "upi", "netbanking", "wallet"],
+      "paymentMethods": ["card", "apm", "netbanking", "wallet", "bank transfer", "open banking"],
       "recurring": false
     }
   },
